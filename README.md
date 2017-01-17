@@ -25,14 +25,14 @@ In case of loops in the graphs, the program will print "Endless Loop" as one of 
 
 Example:
 For the input file:
-dad:1:mom/* !&
-dad:3:child
-child:5.84765:sister
-child:10:brother
-sister:1:child
+	dad:1:mom/* !&
+	dad:3:child
+	child:5.84765:sister
+	child:10:brother
+	sister:1:child
 And input search word:
 	dad
 The output will be:
-termination word: mom/* !&, probability: 0.25
-termination word: Endless Loop, probability: 0.27674371279022436
-termination word: brother, probability: 0.4732562872097756
+	termination word: mom/* !&, probability: 0.25
+	termination word: Endless Loop, probability: 0.27674371279022436
+	termination word: brother, probability: 0.4732562872097756
