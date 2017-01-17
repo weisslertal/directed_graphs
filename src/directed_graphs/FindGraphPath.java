@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class FindGraphPath {
 	
-	final static String fileAddress = "C:\\Users\\Tal Weissler\\workspace\\directed_graphs\\words3.txt"; //change this to the path to the desired file
+	final static String fileAddress = "C:\\Users\\Tal Weissler\\workspace\\directed_graphs\\words.txt"; //change this to the path to the desired file
 
 	static ArrayList<Node> nodesList = new ArrayList<>();
 	static ArrayList<TerNode> terminationNodes = new ArrayList<>();
@@ -50,15 +50,14 @@ public class FindGraphPath {
 			
 			//print all of the termination words and the chances of getting to them
 			for(TerNode printNode:terminationNodes){
-				System.out.print("termination word: " + printNode.name + ", ");
-				System.out.println("probability: " + printNode.chance);
+				System.out.print("termination word: " + printNode.name + ", " + "probability: " + printNode.chance + "\n");
 			}
 			
 			input.close();
 		} else if (negativeWeights){
 			System.out.println("Negetive weights are not allowed");
 		} else if (forbiddenInput){
-			System.out.println("the word 'Endless Loop' not allowed");
+			System.out.println("The word 'Endless Loop' is not allowed");
 		}
 	}
 	
@@ -85,17 +84,15 @@ public class FindGraphPath {
 				
 					int nodeIndex = searchListNodes(edge[0],nodesList);
 					
-					//check if the word is in the list - if it isn't then add it, if it is then add another arrow to it
+					//check if the word is in the list - if it isn't then add it
+					//(by creating a new node with the originating word, then adding an arrow to it with the weight and the terminating word),
+					//if it's in the list then add another arrow to it
 					if (nodeIndex==-1){
-						//create new node with the originating word
 						Node newNode = new Node(edge[0]);
-						//add an arrow to it with the weight and the terminating word
 						newNode.addArrow(new Arrow(Double.parseDouble(edge[1]),edge[2]));
-						//add it to the list
 						nodesList.add(newNode);
 					}
 					else{
-						//add another arrow to the existing word
 						nodesList.set(nodeIndex,nodesList.get(nodeIndex).addArrow(new Arrow(Double.parseDouble(edge[1]),edge[2])));
 					}
 				}
@@ -119,44 +116,45 @@ public class FindGraphPath {
 		
 		//go through each arrow of the node
 		for(Arrow arrow: node.arrow){
-			//reset the chance to this node's chance
+			//reset the chance (=probability) to this node's chance and update it to this arrow's chance
 			Double thisChance = chance;
-			//update the chance to this arrow's chance
 			thisChance = thisChance*arrow.weight/totalWeights;
+			
 			if(searchListNodes(arrow.nextNodeName,nodesList)!=-1){
 				if(!nodesList.get(searchListNodes(arrow.nextNodeName,nodesList)).visited){
-					//if the node appear in the nodesList (which means it's not a termination node) then check it's arrows
+					//if the node exists in the nodesList (which means it's not a termination node) then check it's arrows
 					nodesList.get(searchListNodes(arrow.nextNodeName,nodesList)).setVisited();
 					findTerminationNodes(nodesList.get(searchListNodes(arrow.nextNodeName,nodesList)),thisChance);
 				}
 				else{
-					//if it gets stuck in an endless loop it will add it to the list with the chance of getting stuck in the loop
-					int index = searchListTerNode(loop,terminationNodes);
-					if(index==-1){
-						//if it doesn't appear in the termination node list, we add it
-						terminationNodes.add(new TerNode(loop,thisChance));
-					}
-					else{
-						//if it appears in the termination node list, we update it by adding the new chance to the existing one 
-						terminationNodes.set(index, new TerNode(loop,thisChance+terminationNodes.get(index).chance));
-					}
+					//in case the node has already been visited, we see that we entered a loop and we add it to the list
+					addTerminationNode(loop, thisChance);
 				}
 			}
 			else{
-				//if the node doesn't appear in the nodesList (which means it's a termination node) 
-				//then add or update it to the termination nodes list
-				int index = searchListTerNode(arrow.nextNodeName,terminationNodes);
-				if(index==-1){
-					//if it doesn't appear in the termination node list, we add it
-					terminationNodes.add(new TerNode(arrow.nextNodeName,thisChance));
-				}
-				else{
-					//if it appears in the termination node list, we update it by adding the new chance to the existing one 
-					//(there is more than one rout to get to that node, so we add the chances of all of them) 
-					terminationNodes.set(index, new TerNode(arrow.nextNodeName,thisChance+terminationNodes.get(index).chance));
-				}
+				//the node doesn't appear in the nodes list, which means it's a termination node, so it's added to the list
+				addTerminationNode(arrow.nextNodeName, thisChance);
 			}
 		}
+		
+	}
+	
+	
+	private static void addTerminationNode(String terNode, Double chance) {
+		
+		//check if the node already exists in the terminationNodes list.
+		int index = searchListTerNode(terNode,terminationNodes);
+		
+		if(index==-1){
+			//if it doesn't appear in the termination node list, we add it
+			terminationNodes.add(new TerNode(terNode,chance));
+		}
+		else{
+			//if it appears in the termination node list, we update it by adding the new chance to the existing one 
+			//(there is more than one rout to get to that node, so we add the chances of all of them) 
+			terminationNodes.set(index, new TerNode(terNode,chance+terminationNodes.get(index).chance));
+		}
+		
 	}
 	
 	
